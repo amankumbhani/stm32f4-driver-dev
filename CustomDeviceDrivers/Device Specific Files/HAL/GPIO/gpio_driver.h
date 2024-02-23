@@ -86,6 +86,26 @@ typedef enum
 	E_GPIO_HIGH
 } GPIO_OutputState_e;
 
+typedef enum
+{
+	E_GPIO_ALT_FUNC_0 = 0,
+	E_GPIO_ALT_FUNC_1,
+	E_GPIO_ALT_FUNC_2,
+	E_GPIO_ALT_FUNC_3,
+	E_GPIO_ALT_FUNC_4,
+	E_GPIO_ALT_FUNC_5,
+	E_GPIO_ALT_FUNC_6,
+	E_GPIO_ALT_FUNC_7,
+	E_GPIO_ALT_FUNC_8,
+	E_GPIO_ALT_FUNC_9,
+	E_GPIO_ALT_FUNC_10,
+	E_GPIO_ALT_FUNC_11,
+	E_GPIO_ALT_FUNC_12,
+	E_GPIO_ALT_FUNC_13,
+	E_GPIO_ALT_FUNC_14,
+	E_GPIO_ALT_FUNC_15,
+} GPIO_AltFunct_e;
+
 typedef struct
 {
 	/** Pin number to be configured */
@@ -104,7 +124,7 @@ typedef struct
 	GPIO_PullUpDownConf_e pullUpDownConf;
 
 	/** Alternate functionality of the GPIO */
-	// TODO: Add this functionality
+	GPIO_AltFunct_e alternateFunc;
 } GPIO_PinConfiguration;
 
 typedef struct

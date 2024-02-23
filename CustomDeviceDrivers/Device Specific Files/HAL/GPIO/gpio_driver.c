@@ -37,10 +37,14 @@ HAL_Status GPIOInitialize(GPIO_Info_t * gpioConfig)
 		EXTI->IMR |= (1u << gpioConfig->pinConfiguration.pinNumber);
 	}
 
+	/** Configure the alternate functionality required on the GPIO pin */
+	gpioConfig->GPIOx->AFR[ gpioConfig->pinConfiguration.pinNumber / 8U] |= gpioConfig->pinConfiguration.alternateFunc << (gpioConfig->pinConfiguration.pinNumber % (uint16_t)8);
+
 	/** Configure the speed of the GPIO */
 	gpioConfig->GPIOx->OSPEEDR |= (gpioConfig->pinConfiguration.speed << 2 * gpioConfig->pinConfiguration.pinNumber);
 
 	/** Configure the type of the GPIO, i.e., open drain or push pull */
+	gpioConfig->GPIOx->OTYPER |= (gpioConfig->pinConfiguration.type << gpioConfig->pinConfiguration.pinNumber);
 
 	/** Configure the pull ups of the GPIO */
 	gpioConfig->GPIOx->PUPDR |= (gpioConfig->pinConfiguration.pullUpDownConf << 2 * gpioConfig->pinConfiguration.pinNumber);

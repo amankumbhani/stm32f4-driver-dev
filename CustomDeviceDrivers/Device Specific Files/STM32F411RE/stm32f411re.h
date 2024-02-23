@@ -70,6 +70,19 @@ typedef struct
 	uint32_t AFR[2];
 } GPIOx_t;
 
+typedef struct
+{
+	uint32_t CR1;
+	uint32_t CR2;
+	uint32_t SR;
+	uint32_t DR;
+	uint32_t CRCPR;
+	uint32_t RXCRCR;
+	uint32_t TXCRCR;
+	uint32_t I2SCFGR;
+	uint32_t I2SPR;
+} SPIx_t;
+
 /**
  * \brief RCC Configuration Registers
  */
@@ -226,10 +239,36 @@ typedef struct
 #define GPIOE													((GPIOx_t *)GPIOE_BASEADDR)
 #define GPIOH													((GPIOx_t *)GPIOH_BASEADDR)
 
+#define SPI1													((SPIx_t *)SPI1_BASEADDR)
+#define SPI2													((SPIx_t *)SPI2_BASEADDR)
+#define SPI3													((SPIx_t *)SPI3_BASEADDR)
+
 #define RCC														((RCC_t *)RCC_BASEADDR)
 
 #define EXTI													((EXTI_t *)EXTI_BASEADDR)
 
 #define SYSCFG													((SYSCFG_t *)SYSCFG_BASEADDR)
+
+
+/************************* BIT DEFINITIONS FOR SPI PERIPHERAL *************************/
+#define BIDIMODE												(15U)
+#define BIDIOE													(14U)
+#define CRCEN													(13U)
+#define CRCNEXT													(12U)
+#define DFF														(11U)
+#define RXONLY													(10U)
+#define SSM														(9U)
+#define SSI														(8U)
+#define LSBFIRST												(7U)
+#define SPE														(6U)
+#define BAUDRATECONTROL											(3U)
+#define MSTR													(2U)
+#define CPOL													(1U)
+#define CPHA													(0U)
+
+#define SPI_SR_TXE_MASK											(1 << 1U)
+#define SPI_SR_BUSY_MASK										(1 << 7U)
+
+#define SPI_CR1_DFF_MASK										(1 << DFF)
 
 #endif

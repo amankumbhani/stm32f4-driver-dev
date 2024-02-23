@@ -22,6 +22,7 @@
 /* USER CODE BEGIN Includes */
 #include "stm32f411re.h"
 #include "gpio_driver.h"
+#include "spi_driver.h"
 #include <string.h>
 /* USER CODE END Includes */
 
@@ -43,6 +44,7 @@
 
 /* USER CODE BEGIN PV */
 static void GPIO_CONFIGURE(void);
+static void SPI_Init(void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,6 +76,9 @@ int main(void)
 
   /* USER CODE END Init */
 	GPIO_CONFIGURE();
+	SPI_Init();
+	SPIEnablePeripheral(SPI1, E_EN);
+	SPISSIConfig(SPI1, E_EN);
 
   /* Configure the system clock */
 
@@ -82,7 +87,8 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* USER CODE BEGIN 2 */
-
+	char data[] = "Hello world";
+	SPISendData(SPI1, (uint8_t *)data, strlen(data));
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -96,34 +102,81 @@ int main(void)
   /* USER CODE END 3 */
 }
 
-void GPIO_CONFIGURE(void)
+static void SPI_Init()
 {
-	/** Enable the GPIO peripheral clock */
+	// TODO: Add this inside the SPI initialize function
+	SPIEnablePeriphClk(SPI1, E_EN);
+
+	SPI_Info_t spiInfo = {0};
+
+	spiInfo.SPIx = SPI1;
+	spiInfo.spiConfiguration.e_deviceConfig = E_SPI_MASTER;
+	spiInfo.spiConfiguration.e_busConfig = E_SPI_FULL_DUPLEX;
+	spiInfo.spiConfiguration.e_clockSpeed = E_SPI_CLK_DIV_2;
+	spiInfo.spiConfiguration.e_dataFormat = E_8BIT_DATA;
+	spiInfo.spiConfiguration.e_commMode = E_SPI_MODE_0;
+	spiInfo.spiConfiguration.e_nssConfig = E_NSS_SSM_EN;
+
+	SPIInitialize(&spiInfo);
+}
+
+static void GPIO_CONFIGURE(void)
+{
+//	/** Enable the GPIO peripheral clock */
+//	GPIOEnablePeriphClk(GPIOA, E_EN);
+//	GPIOEnablePeriphClk(GPIOC, E_EN);
+//
+//	GPIO_Info_t gpioInfo = {0};
+//	gpioInfo.GPIOx = GPIOA;
+//	gpioInfo.pinConfiguration.mode = E_GPIO_OUTPUT;
+//	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_5;
+//	gpioInfo.pinConfiguration.type = E_GPIO_PUSHPULL;
+//	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_NO_PULLUP;
+//	gpioInfo.pinConfiguration.speed = E_GPIO_LOW_SPEED;
+//	GPIOInitialize(&gpioInfo);
+//
+//	memset(&gpioInfo, 0, sizeof(gpioInfo));
+//
+//	gpioInfo.GPIOx = GPIOC;
+//	gpioInfo.pinConfiguration.mode = E_GPIO_IT_FALLING;
+//	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_13;
+//	gpioInfo.pinConfiguration.type = E_GPIO_PUSHPULL;
+//	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_NO_PULLUP;
+//	gpioInfo.pinConfiguration.speed = E_GPIO_LOW_SPEED;
+//	GPIOInitialize(&gpioInfo);
+//
+//	/** Disable interrupts */
+//	GPIOSetIRQPriority(40, 3);
+//	GPIOConfigureIRQn(40, E_DI);
+
+	// PA5 -> SPI1_SCK
+	// PA6 -> SPI1_MISO
+	// PA7 -> SPI1_MOSI
+	// PA4 -> SPI1_NSS
+
+	/** Enable peripheral clocks for GPIOs */
+	// TODO: Add this inside the GPIOInitialize function
 	GPIOEnablePeriphClk(GPIOA, E_EN);
-	GPIOEnablePeriphClk(GPIOC, E_EN);
 
 	GPIO_Info_t gpioInfo = {0};
+
 	gpioInfo.GPIOx = GPIOA;
-	gpioInfo.pinConfiguration.mode = E_GPIO_OUTPUT;
 	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_5;
-	gpioInfo.pinConfiguration.type = E_GPIO_PUSHPULL;
+	gpioInfo.pinConfiguration.mode = E_GPIO_ALTERNATE;
+	gpioInfo.pinConfiguration.alternateFunc = E_GPIO_ALT_FUNC_5;
+	gpioInfo.pinConfiguration.speed = E_GPIO_FAST_SPEED;
 	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_NO_PULLUP;
-	gpioInfo.pinConfiguration.speed = E_GPIO_LOW_SPEED;
+	gpioInfo.pinConfiguration.type = E_GPIO_PUSHPULL;
 	GPIOInitialize(&gpioInfo);
 
-	memset(&gpioInfo, 0, sizeof(gpioInfo));
-
-	gpioInfo.GPIOx = GPIOC;
-	gpioInfo.pinConfiguration.mode = E_GPIO_IT_FALLING;
-	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_13;
-	gpioInfo.pinConfiguration.type = E_GPIO_PUSHPULL;
-	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_NO_PULLUP;
-	gpioInfo.pinConfiguration.speed = E_GPIO_LOW_SPEED;
+	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_6;
 	GPIOInitialize(&gpioInfo);
 
-	/** Disable interrupts */
-	GPIOSetIRQPriority(40, 3);
-	GPIOConfigureIRQn(40, E_DI);
+	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_7;
+	GPIOInitialize(&gpioInfo);
+
+	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_4;
+	GPIOInitialize(&gpioInfo);
 }
 
 void EXTI15_10_IRQHandler(void)
