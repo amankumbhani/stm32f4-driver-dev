@@ -268,6 +268,7 @@ typedef struct
 
 #define SPI_SR_TXE_MASK											(1 << 1U)
 #define SPI_SR_BUSY_MASK										(1 << 7U)
+#define SPI_SR_RXNE_MASK										(1 << 0U)
 
 #define SPI_CR1_DFF_MASK										(1 << DFF)
 

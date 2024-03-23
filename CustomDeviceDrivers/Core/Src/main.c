@@ -188,6 +188,13 @@ void EXTI15_10_IRQHandler(void)
 	GPIOWritePin(GPIOA, E_GPIO_PIN_5, value);
 }
 
+void SPI1_IRQHandler(void)
+{
+	SPI_Comm_Handle_t spiCommHandle;
+	spiCommHandle.SPIx = SPI1;
+	SPIIRQHandler(&spiCommHandle);
+}
+
 #ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number

@@ -57,6 +57,18 @@ typedef enum
 	E_NSS_SSM_EN,
 } SPI_NssConfig_e;
 
+typedef enum
+{
+	E_RX_STATE_BUSY,
+	E_RX_STATE_NOT_BUSY
+} SPI_RxState_e;
+
+typedef enum
+{
+	E_TX_STATE_BUSY,
+	E_TX_STATE_NOT_BUSY
+} SPI_TxState_e;
+
 /**
  * API requirements for SPI
  *
@@ -89,6 +101,22 @@ typedef struct
 	SPI_Configuration spiConfiguration;
 } SPI_Info_t;
 
+typedef struct
+{
+	uint8_t *pTxBuf;
+	uint8_t *pRxBuf;
+	uint8_t txLen;
+	uint8_t rxLen;
+	SPI_RxState_e rxState_e;
+	SPI_TxState_e txState_e;
+} SPI_Data_Info_t;
+
+typedef struct
+{
+	SPIx_t *SPIx;
+	SPI_Data_Info_t dataPacket;
+} SPI_Comm_Handle_t;
+
 /**
  * \brief A function to initialise SPI communication
  */
@@ -97,12 +125,27 @@ void SPIInitialize(SPI_Info_t * spiConfigInfo);
 /**
  * \brief A function to send data over SPI
  */
-void SPISendData(SPIx_t SPIx, uint8_t * dataBuf, uint8_t dataLen);
+void SPISendData(SPIx_t *SPIx, uint8_t * dataBuf, uint8_t dataLen);
+
+/**
+ * \brief A function to receive data over SPI
+ */
+void SPIReceiveData(SPIx_t *SPIx, uint8_t *dataBuf, uint8_t dataLen);
+
+/**
+ * \brief A function to send data over SPI using interrupts
+ */
+void SPISendDataIT(SPI_Comm_Handle_t *spiCommHandle, uint8_t *pTxBuf, uint8_t len);
+
+/**
+ * \brief A function to receive data over SPI using interrupts
+ */
+void SPIReceiveDataIT(SPI_Comm_Handle_t *spiCommHandle, uint8_t *pRxBuf, uint8_t len);
 
 /**
  * \brief A fucntion used to enable the SPI peripheral
  */
-void SPIEnablePeripheral(SPIx_t SPIx, HAL_LogicLevel enDi);
+void SPIEnablePeripheral(SPIx_t *SPIx, HAL_LogicLevel enDi);
 
 /**
  * \brief A function that enables the peripheral clock for the input SPI
@@ -122,10 +165,10 @@ void SPISetIRQPriority(uint8_t IRQn, uint8_t priorityNumber);
 /**
  * \brief A function that handles interrupts
  */
-void SPIIRQHandler(uint8_t pinNumber);
+void SPIIRQHandler(SPI_Comm_Handle_t *spiCommHandle);
 
 /**
  * \brief A function that enables SSI
  */
-void SPISSIConfig(SPIx_t SPIx, HAL_LogicLevel enDi);
+void SPISSIConfig(SPIx_t *SPIx, HAL_LogicLevel enDi);
 #endif
