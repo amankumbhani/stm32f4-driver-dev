@@ -148,12 +148,12 @@ void SPIIRQHandler(SPI_Comm_Handle_t *spiCommHandle)
 	if (temp1)
 	{
 		/** Interrupt caused as TX buffer is empty */
-		SPITXEHandle();
+		SPITXEHandle(spiCommHandle);
 	}
 	if (temp2)
 	{
 		/** Interrupt caused as RX buffer is not empty */
-		SPIRXNEHandle();
+		SPIRXNEHandle(spiCommHandle);
 	}
 }
 
