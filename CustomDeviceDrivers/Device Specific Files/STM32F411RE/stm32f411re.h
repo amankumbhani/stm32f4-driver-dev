@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define HSI														((uint32_t)16000000U)			/** 16 MHz */
+#define HSE														((uint32_t)8000000U)			/** 8 MHz */
+
 #define FLASH													(uint32_t *)(0x08000000U)
 #define SYSTEM_MEMORY											(uint32_t *)(0x1FFF0000U)
 #define OTP_AREA												(uint32_t *)(0x1FFF7800U)
@@ -118,6 +121,20 @@ typedef struct
 	uint32_t RESERVED7;
 	uint32_t DCKCFGR;
 } RCC_t;
+
+typedef struct
+{
+	uint32_t CR1;
+	uint32_t CR2;
+	uint32_t OAR1;
+	uint32_t OAR2;
+	uint32_t DR;
+	uint32_t SR1;
+	uint32_t SR2;
+	uint32_t CCR;
+	uint32_t TRISE;
+	uint32_t FLTR;
+} I2Cx_t;
 
 typedef struct
 {
@@ -243,6 +260,10 @@ typedef struct
 #define SPI2													((SPIx_t *)SPI2_BASEADDR)
 #define SPI3													((SPIx_t *)SPI3_BASEADDR)
 
+#define I2C1													((I2Cx_t *)I2C1_BASEADDR)
+#define I2C2													((I2Cx_t *)I2C2_BASEADDR)
+#define I2C3													((I2Cx_t *)I2C3_BASEADDR)
+
 #define RCC														((RCC_t *)RCC_BASEADDR)
 
 #define EXTI													((EXTI_t *)EXTI_BASEADDR)
@@ -271,5 +292,38 @@ typedef struct
 #define SPI_SR_RXNE_MASK										(1 << 0U)
 
 #define SPI_CR1_DFF_MASK										(1 << DFF)
+
+
+/************************* BIT DEFINITIONS FOR RCC *************************/
+#define RCC_CFGR_PPRE1_MASK										(0x1C00U)		/** PRESCALER FOR APB1 */
+#define RCC_CFGR_HPRE_MASK										(0x00F0U)		/** PRESCALER FOR AHB */
+#define RCC_CFGR_SWS_MASK										(0xCU)		    /** SYSTEM CLOCK SWITCH */
+#define RCC_PLLCFGR_PLLSRC										(1 << 22U) 		/** MAIN PLL & AUDIO PLL ENTRY CLOCK SOURCE */
+#define RCC_PLLCFGR_PLLM										(0x3FU)			/** DIVISION FACTOR FOR MAIN PLL INPUT CLOCK */
+#define RCC_PLLCFGR_PLLP										(0x30000U) 		/** MAIN PLL DIVISION FACTOR FOR MAIN SYSTEM CLOCK */
+#define RCC_PLLCFGR_PLLN										(0x7FC0U)		/** MAIN PLL MULTIPLICATION FACTOR FOR VCO */
+
+
+/************************* BIT DEFINITIONS FOR I2C *************************/
+#define I2C_CR1_START_BIT_POS									(8U)		/** START BIT POSITION IN I2C CR1 REG */
+#define I2C_CR1_STOP_BIT_POS									(9U)		/** STOP BIT POSITION IN I2C CR1 REG */
+#define I2C_SR1_TXE_BIT_POS										(7U)
+#define I2C_SR1_RXNE_BIT_POS									(6U)
+#define I2C_SR1_BTF_BIT_POS										(2U)
+#define I2C_SR1_ADDR_BIT_POS									(1U)
+#define I2C_SR1_START_BIT_POS									(0U)
+
+
+/**
+ * \brief This function calculates the output of the PLL clock
+ * \return Value of the output clock
+ */
+uint32_t RCC_GetPLLOutputClock(void);
+
+/**
+ * \brief This function calculates the PLK1 clock
+ * \return Value of the PLK1 clock
+ */
+uint32_t RCC_GetPLK1Clock(void);
 
 #endif
