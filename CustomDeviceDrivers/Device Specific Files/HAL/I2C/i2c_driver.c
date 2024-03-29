@@ -102,7 +102,7 @@ void I2CMasterSendData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *dataBuf,
 }
 
 // TODO: Incorporate repeated start condition instead of STOP START
-void I2CMasterReceiveData(I2Cx_t * I2Cx, uint8_t slaveAddress, uint8_t *rxBuf, uint8_t rxLen)
+void I2CMasterReceiveData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *rxBuf, uint8_t rxLen)
 {
 	/** Set the start bit to 1 */
 	I2Cx->CR1 |= (1 << I2C_CR1_START_BIT_POS);
@@ -149,7 +149,7 @@ void I2CMasterReceiveData(I2Cx_t * I2Cx, uint8_t slaveAddress, uint8_t *rxBuf, u
 		{
 			while (!(I2Cx->SR1 & I2C_SR1_RXNE_BIT_MASK));
 
-			if (i == 2)
+			if (rxLen == 2)
 			{
 				/** Make the ACK bit 0 */
 				I2Cx->CR1 &= ~(1 << 10);
