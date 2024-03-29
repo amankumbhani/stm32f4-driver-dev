@@ -64,7 +64,16 @@ void I2CPeripheralDisable(I2Cx_t * I2Cx);
 
 /**
  * \brief A function to send data over I2C
+ * param[in] I2Cx - I2C peripheral being used
+ * param[in] i2cSlaveAddress - Slave address of the I2C slave device intended to communicate with
+ * param[in] dataBuf - Pointer to the data to be sent
+ * param[in] dataLen - Number of bytes to be sent
  */
 void I2CMasterSendData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *dataBuf, uint8_t dataLen);
+
+/**
+ * \brief A function to receive data over I2C
+ */
+void I2CMasterReceiveData(I2Cx_t * I2Cx, uint8_t slaveAddress, uint8_t *rxBuf, uint8_t rxLen);
 
 #endif

@@ -306,12 +306,19 @@ typedef struct
 
 /************************* BIT DEFINITIONS FOR I2C *************************/
 #define I2C_CR1_START_BIT_POS									(8U)		/** START BIT POSITION IN I2C CR1 REG */
+#define I2C_CR1_START_BIT_MASK									(1 << 8)
 #define I2C_CR1_STOP_BIT_POS									(9U)		/** STOP BIT POSITION IN I2C CR1 REG */
+#define I2C_CR1_STOP_BIT_MASK									(1 << 9)
 #define I2C_SR1_TXE_BIT_POS										(7U)
+#define I2C_SR1_TXE_BIT_MASK									(1 << 7)
 #define I2C_SR1_RXNE_BIT_POS									(6U)
+#define I2C_SR1_RXNE_BIT_MASK									(1 << 6)
 #define I2C_SR1_BTF_BIT_POS										(2U)
+#define I2C_SR1_BTF_BIT_MASK									(1 << 2)
 #define I2C_SR1_ADDR_BIT_POS									(1U)
+#define I2C_SR1_ADDR_BIT_MASK									(1 << 1)
 #define I2C_SR1_START_BIT_POS									(0U)
+#define I2C_SR1_START_BIT_MASK									(1 << 0)
 
 
 /**
