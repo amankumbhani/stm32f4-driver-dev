@@ -2,15 +2,10 @@
 
 void I2CInitialize(I2C_Info_t * i2cInfo)
 {
-	uint8_t tempReg = 0u;
+	uint32_t tempReg = 0u;
 	uint16_t CCRVal = 0u;
 
-	// TODO: Enable the clock for the I2C peripheral
-
-	// FIXME: This must be done only when PE=1
-	/** Ack control enable / disable settings */
-	tempReg = (i2cInfo->i2cConfiguration.e_ackControl << 10);
-	i2cInfo->I2Cx->CR1 |= tempReg;
+	I2C1_PERIPH_CLK_EN();
 
 	tempReg = 0;
 
@@ -26,7 +21,7 @@ void I2CInitialize(I2C_Info_t * i2cInfo)
 		/** 100 KHz */
 		tempReg &= ~(1 << 15);
 		tempReg &= ~(1 << 14);
-		CCRVal = RCC_GetPLK1Clock() / (2 * 400000);
+		CCRVal = RCC_GetPLK1Clock() / (2 * 100000);
 	}
 	else
 	{
@@ -47,6 +42,12 @@ void I2CInitialize(I2C_Info_t * i2cInfo)
 
 	/** 14 bit must always be kept 1 by software */
 	i2cInfo->I2Cx->OAR1 |= (1 << 14U);
+
+	I2CPeripheralEnable(i2cInfo->I2Cx);
+
+	/** Ack control enable / disable settings */
+	tempReg = (i2cInfo->i2cConfiguration.e_ackControl << 10);
+	i2cInfo->I2Cx->CR1 |= tempReg;
 }
 
 void I2CPeripheralEnable(I2Cx_t * I2Cx)

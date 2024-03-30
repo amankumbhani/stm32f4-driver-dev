@@ -3,6 +3,10 @@
 
 #include "stm32f411re.h"
 
+#define I2C1_PERIPH_CLK_EN()				(RCC->APB1ENR |= (1U << 21U))
+#define I2C1_PERIPH_CLK_DI()				(RCC->APB1ENR &= ~(1U << 21U))
+
+
 typedef enum
 {
 	E_I2C_NO_ACK_RETURN,

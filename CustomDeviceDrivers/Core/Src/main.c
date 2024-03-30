@@ -23,6 +23,7 @@
 #include "stm32f411re.h"
 #include "gpio_driver.h"
 #include "spi_driver.h"
+#include "i2c_driver.h"
 #include <string.h>
 /* USER CODE END Includes */
 
@@ -45,6 +46,7 @@
 /* USER CODE BEGIN PV */
 static void GPIO_CONFIGURE(void);
 static void SPI_Init(void);
+static void I2C_Init(void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,9 +78,12 @@ int main(void)
 
   /* USER CODE END Init */
 	GPIO_CONFIGURE();
-	SPI_Init();
-	SPIEnablePeripheral(SPI1, E_EN);
-	SPISSIConfig(SPI1, E_EN);
+
+	I2C_Init();
+
+	//	SPI_Init();
+	//	SPIEnablePeripheral(SPI1, E_EN);
+	//	SPISSIConfig(SPI1, E_EN);
 
   /* Configure the system clock */
 
@@ -87,12 +92,18 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* USER CODE BEGIN 2 */
-	char data[] = "Hello world";
-	SPISendData(SPI1, (uint8_t *)data, strlen(data));
+	//	char data[] = "Hello world";
+	//	SPISendData(SPI1, (uint8_t *)data, strlen(data));
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	uint8_t dataBuf[1] = {0x00};
+	I2CMasterSendData(I2C1, 0x53, dataBuf, 1);
+
+
+	I2CMasterReceiveData(I2C1, 0x53, dataBuf, 1);
+
   while (1)
   {
     /* USER CODE END WHILE */
@@ -118,6 +129,18 @@ static void SPI_Init()
 	spiInfo.spiConfiguration.e_nssConfig = E_NSS_SSM_EN;
 
 	SPIInitialize(&spiInfo);
+}
+
+static void I2C_Init()
+{
+	I2C_Info_t i2cInfo = {0};
+
+	i2cInfo.I2Cx = I2C1;
+	i2cInfo.i2cConfiguration.e_ackControl = E_I2C_ACK_RETURN;
+	i2cInfo.i2cConfiguration.e_i2cBaudrate = E_I2C_BAUDRATE_100KHZ;
+	i2cInfo.i2cConfiguration.slaveAddress = 0x53;
+
+	I2CInitialize(&i2cInfo);
 }
 
 static void GPIO_CONFIGURE(void)
@@ -156,26 +179,20 @@ static void GPIO_CONFIGURE(void)
 
 	/** Enable peripheral clocks for GPIOs */
 	// TODO: Add this inside the GPIOInitialize function
-	GPIOEnablePeriphClk(GPIOA, E_EN);
+	GPIOEnablePeriphClk(GPIOB, E_EN);
 
 	GPIO_Info_t gpioInfo = {0};
 
-	gpioInfo.GPIOx = GPIOA;
-	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_5;
+	gpioInfo.GPIOx = GPIOB;
+	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_8;		/** I2C1 SCL */
 	gpioInfo.pinConfiguration.mode = E_GPIO_ALTERNATE;
-	gpioInfo.pinConfiguration.alternateFunc = E_GPIO_ALT_FUNC_5;
-	gpioInfo.pinConfiguration.speed = E_GPIO_FAST_SPEED;
-	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_NO_PULLUP;
-	gpioInfo.pinConfiguration.type = E_GPIO_PUSHPULL;
+	gpioInfo.pinConfiguration.alternateFunc = E_GPIO_ALT_FUNC_4;
+	gpioInfo.pinConfiguration.speed = E_GPIO_HIGH_SPEED;
+	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_PULLUP;
+	gpioInfo.pinConfiguration.type = E_GPIO_OPENDRAIN;
 	GPIOInitialize(&gpioInfo);
 
-	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_6;
-	GPIOInitialize(&gpioInfo);
-
-	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_7;
-	GPIOInitialize(&gpioInfo);
-
-	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_4;
+	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_9;		/** I2C1 SDA */
 	GPIOInitialize(&gpioInfo);
 }
 
