@@ -37,10 +37,6 @@ HAL_Status GPIOInitialize(GPIO_Info_t * gpioConfig)
 		EXTI->IMR |= (1u << gpioConfig->pinConfiguration.pinNumber);
 	}
 
-	uint8_t temp1Var = gpioConfig->pinConfiguration.pinNumber / 8U;
-	uint8_t temp2Var = gpioConfig->pinConfiguration.pinNumber % 8U;
-	temp2Var = temp2Var * 4;
-
 	/** Configure the alternate functionality required on the GPIO pin */
 	gpioConfig->GPIOx->AFR[ gpioConfig->pinConfiguration.pinNumber / 8U] |= gpioConfig->pinConfiguration.alternateFunc << ((gpioConfig->pinConfiguration.pinNumber % 8) * 4);
 

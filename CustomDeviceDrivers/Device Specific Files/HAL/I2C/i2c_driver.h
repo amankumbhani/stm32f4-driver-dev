@@ -6,6 +6,11 @@
 #define I2C1_PERIPH_CLK_EN()				(RCC->APB1ENR |= (1U << 21U))
 #define I2C1_PERIPH_CLK_DI()				(RCC->APB1ENR &= ~(1U << 21U))
 
+typedef enum
+{
+	E_I2C_WRITE_OP,
+	E_I2C_READ_OP,
+} I2C_OperationType_e;
 
 typedef enum
 {

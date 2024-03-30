@@ -98,17 +98,16 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	uint8_t dataBuf[1] = {0x00};
-	I2CMasterSendData(I2C1, 0x53, dataBuf, 1);
-
-
-	I2CMasterReceiveData(I2C1, 0x53, dataBuf, 1);
 
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  uint8_t dataBuf[1] = {0x00};
+	  I2CMasterSendData(I2C1, 0x53, dataBuf, 1);
+
+	  I2CMasterReceiveData(I2C1, 0x53, dataBuf, 1);
   }
   /* USER CODE END 3 */
 }

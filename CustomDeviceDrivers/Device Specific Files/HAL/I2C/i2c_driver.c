@@ -1,5 +1,11 @@
 #include "i2c_driver.h"
 
+static void I2CManageAckSettings(I2Cx_t *I2Cx, HAL_LogicLevel enDI);
+static void I2CGenerateStartCondition(I2Cx_t *I2Cx);
+static void I2CGenerateStopCondition(I2Cx_t *I2Cx);
+static bool I2CGetFlagStatusReg1(I2Cx_t *I2Cx, uint16_t mask);
+static bool I2CGetFlagStatusReg2(I2Cx_t *I2Cx, uint16_t mask);
+
 void I2CInitialize(I2C_Info_t * i2cInfo)
 {
 	uint32_t tempReg = 0u;
@@ -45,9 +51,21 @@ void I2CInitialize(I2C_Info_t * i2cInfo)
 
 	I2CPeripheralEnable(i2cInfo->I2Cx);
 
-	/** Ack control enable / disable settings */
-	tempReg = (i2cInfo->i2cConfiguration.e_ackControl << 10);
-	i2cInfo->I2Cx->CR1 |= tempReg;
+	I2CManageAckSettings(i2cInfo->I2Cx, E_EN);
+}
+
+void I2CManageAckSettings(I2Cx_t * I2Cx, HAL_LogicLevel enDi)
+{
+	if (enDi == E_EN)
+	{
+		/** Enable ACKs */
+		I2Cx->CR1 |= (1 << 10);
+	}
+	else
+	{
+		/** Disable ACKs */
+		I2Cx->CR1 &= ~(1 << 10);
+	}
 }
 
 void I2CPeripheralEnable(I2Cx_t * I2Cx)
@@ -60,44 +78,81 @@ void I2CPeripheralDisable(I2Cx_t * I2Cx)
 	I2Cx->CR1 &= ~(1 << 0);
 }
 
-// TODO: Incorporate repeated start condition instead of STOP START
-void I2CMasterSendData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *dataBuf, uint8_t dataLen)
+static void I2CGenerateStartCondition(I2Cx_t * I2Cx)
 {
 	/** Set the start bit to 1 */
 	I2Cx->CR1 |= (1 << I2C_CR1_START_BIT_POS);
+}
+
+static void I2CGenerateStopCondition(I2Cx_t *I2Cx)
+{
+	/** Set the stop bit to 1 */
+	I2Cx->CR1 |= (1U << I2C_CR1_STOP_BIT_POS);
+}
+
+static bool I2CGetFlagStatusReg1(I2Cx_t *I2Cx, uint16_t mask)
+{
+	return (I2Cx->SR1 & mask);
+}
+
+static bool I2CGetFlagStatusReg2(I2Cx_t *I2Cx, uint16_t mask)
+{
+	return (I2Cx->SR1 & mask);
+}
+
+static void I2CSendSlaveAddress(I2Cx_t *I2Cx, uint8_t slaveAddress, I2C_OperationType_e operationType)
+{
+	uint8_t slaveAddr = slaveAddress << 1U;
+	if (operationType == E_I2C_READ_OP)
+	{
+		slaveAddr |= (1);
+		I2Cx->DR = slaveAddr;
+	}
+	else if (operationType == E_I2C_WRITE_OP)
+	{
+		slaveAddr &= ~(1);
+		I2Cx->DR = slaveAddr;
+	}
+	else
+	{
+		/** Invalid operation type */
+	}
+}
+
+// TODO: Incorporate repeated start condition instead of STOP START
+void I2CMasterSendData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *dataBuf, uint8_t dataLen)
+{
+	I2CGenerateStartCondition(I2Cx);
 
 	/** Check for SB=1 */
-	while (!(I2Cx->SR1 & I2C_SR1_START_BIT_MASK));
+	while (!I2CGetFlagStatusReg1(I2Cx, I2C_SR1_START_BIT_MASK));
 
 	/** Clear by reading SR1 followed by writing DR register with address << 1 with read/write bit */
-	uint8_t slaveAddr = i2cSlaveAddress << 1U;
-	slaveAddr &= ~(1);
-	I2Cx->DR = slaveAddr;
+	I2CSendSlaveAddress(I2Cx, i2cSlaveAddress, E_I2C_WRITE_OP);
 
 	/** Check if ADDR=1 */
-	while (!(I2Cx->SR1 & I2C_SR1_ADDR_BIT_MASK));
+	while (!I2CGetFlagStatusReg1(I2Cx, I2C_SR1_ADDR_BIT_MASK));
 
 	/** Clear by reading SR1 followed by reading SR2 */
 	uint32_t statusReg2 = (I2Cx->SR2);
 	(void)statusReg2;
 
 	/** Check if TXE=1 & write DR with data */
-	while (!(I2Cx->SR1 & I2C_SR1_TXE_BIT_MASK));
+	while (!(I2CGetFlagStatusReg1(I2Cx, I2C_SR1_TXE_BIT_MASK)));
 
 	/** Check if TXE=1 & write DR with next data */
 	while (dataLen > 0)
 	{
-		while (!(I2Cx->SR1 & I2C_SR1_TXE_BIT_MASK));
+		while (!(I2CGetFlagStatusReg1(I2Cx, I2C_SR1_TXE_BIT_MASK)));
 		I2Cx->DR = *dataBuf;
 		dataBuf++;
 		dataLen--;
 	}
 
 	/** Check if TXE=1 & BTF=1 when dataLen == 0 */
-	while ((!(I2Cx->SR1 & I2C_SR1_TXE_BIT_MASK)) && (!(I2Cx->SR1 & I2C_SR1_BTF_BIT_MASK)));
+	while ((!(I2CGetFlagStatusReg1(I2Cx, I2C_SR1_TXE_BIT_MASK))) && (!(I2CGetFlagStatusReg1(I2Cx, I2C_SR1_BTF_BIT_MASK))));
 
-	/** Set the stop bit to 1 */
-	I2Cx->CR1 |= (1U << I2C_CR1_STOP_BIT_POS);
+	I2CGenerateStopCondition(I2Cx);
 
 	// TODO; Configure the TRISE time
 }
@@ -105,34 +160,30 @@ void I2CMasterSendData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *dataBuf,
 // TODO: Incorporate repeated start condition instead of STOP START
 void I2CMasterReceiveData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *rxBuf, uint8_t rxLen)
 {
-	/** Set the start bit to 1 */
-	I2Cx->CR1 |= (1 << I2C_CR1_START_BIT_POS);
+	I2CGenerateStartCondition(I2Cx);
 
 	/** Check for SB=1 */
-	while (!(I2Cx->SR1 & I2C_SR1_START_BIT_MASK));
+	while (!I2CGetFlagStatusReg1(I2Cx, I2C_SR1_START_BIT_MASK));
 
 	/** Clear by reading SR1 followed by writing DR register with address << 1 with read/write bit */
-	uint8_t slaveAddr = i2cSlaveAddress << 1U;
-	slaveAddr |= (1);
-	I2Cx->DR = slaveAddr;
+	I2CSendSlaveAddress(I2Cx, i2cSlaveAddress, E_I2C_READ_OP);
 
 	/** Check if ADDR=1 */
-	while (!(I2Cx->SR1 & I2C_SR1_ADDR_BIT_MASK));
+	while (!I2CGetFlagStatusReg1(I2Cx, I2C_SR1_ADDR_BIT_MASK));
 
 	if (rxLen == 1)
 	{
 		/** Make the ACK bit 0 */
-		I2Cx->CR1 &= ~(1 << 10);
+		I2CManageAckSettings(I2Cx, E_DI);
 
-		/** Clear ADDR flag */
-		/** Clear by reading SR1 followed by reading SR2 */
+		/** Clear ADDR flag by reading SR1 followed by reading SR2 */
 		uint32_t statusReg2 = (I2Cx->SR2);
 		(void)statusReg2;
 
-		while (!(I2Cx->SR1 & I2C_SR1_RXNE_BIT_MASK));
+		while (!I2CGetFlagStatusReg1(I2Cx, I2C_SR1_RXNE_BIT_MASK));
 
 		/** Generate the STOP condition */
-		I2Cx->CR1 |= (1U << I2C_CR1_STOP_BIT_POS);
+		I2CGenerateStopCondition(I2Cx);
 
 		*rxBuf = I2Cx->DR;
 		rxBuf++;
@@ -140,23 +191,22 @@ void I2CMasterReceiveData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *rxBuf
 	}
 	else
 	{
-		/** Clear ADDR flag */
-		/** Clear by reading SR1 followed by reading SR2 */
+		/** Clear ADDR flag by reading SR1 followed by reading SR2 */
 		uint32_t statusReg2 = (I2Cx->SR2);
 		(void)statusReg2;
 
 		/** Start receiving the data */
 		while (rxLen > 0)
 		{
-			while (!(I2Cx->SR1 & I2C_SR1_RXNE_BIT_MASK));
+			while (!I2CGetFlagStatusReg1(I2Cx, I2C_SR1_RXNE_BIT_MASK));
 
 			if (rxLen == 2)
 			{
 				/** Make the ACK bit 0 */
-				I2Cx->CR1 &= ~(1 << 10);
+				I2CManageAckSettings(I2Cx, E_DI);
 
 				/** Generate the STOP condition */
-				I2Cx->CR1 |= (1U << I2C_CR1_STOP_BIT_POS);
+				I2CGenerateStopCondition(I2Cx);
 			}
 
 			*rxBuf = I2Cx->DR;
@@ -165,6 +215,6 @@ void I2CMasterReceiveData(I2Cx_t * I2Cx, uint8_t i2cSlaveAddress, uint8_t *rxBuf
 		}
 	}
 	/** Re-enable Ack control, if ACK is enabled */
+	I2CManageAckSettings(I2Cx, E_EN);
 	// TODO: Incorporate ACK control user configurable parameter to re-enable or disable this
-	I2Cx->CR1 |= (1 << 10);
 }

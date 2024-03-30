@@ -2,6 +2,7 @@
 #define STM32F411RE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define HSI														((uint32_t)16000000U)			/** 16 MHz */
 #define HSE														((uint32_t)8000000U)			/** 8 MHz */
