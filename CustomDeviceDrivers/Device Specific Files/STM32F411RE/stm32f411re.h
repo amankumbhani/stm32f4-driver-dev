@@ -139,6 +139,17 @@ typedef struct
 
 typedef struct
 {
+	uint32_t SR;
+	uint32_t DR;
+	uint32_t BRR;
+	uint32_t CR1;
+	uint32_t CR2;
+	uint32_t CR3;
+	uint32_t GTPR;
+} USARTx_t;
+
+typedef struct
+{
 	uint32_t IMR;
 	uint32_t EMR;
 	uint32_t RSTR;
@@ -265,6 +276,9 @@ typedef struct
 #define I2C2													((I2Cx_t *)I2C2_BASEADDR)
 #define I2C3													((I2Cx_t *)I2C3_BASEADDR)
 
+#define USART1													((USARTx_t *)USART1_BASEADDR)
+#define USART2													((USARTx_t *)USART2_BASEADDR)
+
 #define RCC														((RCC_t *)RCC_BASEADDR)
 
 #define EXTI													((EXTI_t *)EXTI_BASEADDR)
@@ -321,6 +335,30 @@ typedef struct
 #define I2C_SR1_START_BIT_POS									(0U)
 #define I2C_SR1_START_BIT_MASK									(1 << 0)
 
+
+/************************* BIT DEFINITIONS FOR USART *************************/
+#define USART_CR1_UE_BIT_POS									(13U)
+#define USART_CR1_UE_BIT_MASK									(1U << USART_CR1_UE_BIT_POS)
+#define USART_CR1_M_BIT_POS										(12U)
+#define USART_CR1_M_BIT_MASK									(1U << USART_CR1_M_BIT_POS)
+#define USART_CR1_PS_BIT_POS									(9U)
+#define USART_CR1_PS_BIT_MASK									(1 << USART_CR1_PS_BIT_POS)
+#define USART_CR1_PCE_BIT_POS									(10U)
+#define USART_CR1_PCE_BIT_MASK									(1 << USART_CR1_PCE_BIT_POS)
+#define USART_CR1_RE_BIT_POS									(2U)
+#define USART_CR1_RE_BIT_MASK									(1 << USART_CR1_RE_BIT_POS)
+#define USART_CR1_TE_BIT_POS									(3U)
+#define USART_CR1_TE_BIT_MASK									(1 << USART_CR1_TE_BIT_POS)
+#define USART_CR2_STOP_BIT_POS									(12U)
+#define USART_CR2_STOP_BIT_MASK									(1 << USART_CR2_STOP_BIT_POS)
+#define USART_SR_TXE_BIT_POS									(7U)
+#define USART_SR_TXE_BIT_MASK									(1 << USART_SR_TXE_BIT_POS)
+#define USART_SR_RXNE_BIT_POS									(5U)
+#define USART_SR_RXNE_BIT_MASK									(1 << USART_SR_RXNE_BIT_POS)
+#define USART_SR_TC_BIT_POS										(6U)
+#define USART_SR_TC_BIT_MASK									(1 << USART_SR_TC_BIT_POS)
+#define USART_CR1_OVR8_BIT_POS									(15U)
+#define USART_CR1_OVR8_BIT_MASK									(1 << USART_CR1_OVR8_BIT_POS)
 
 /**
  * \brief This function calculates the output of the PLL clock

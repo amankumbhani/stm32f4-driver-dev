@@ -25,6 +25,7 @@
 #include "spi_driver.h"
 #include "i2c_driver.h"
 #include <string.h>
+#include "usart_driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +48,9 @@
 static void GPIO_CONFIGURE(void);
 static void SPI_Init(void);
 static void I2C_Init(void);
+static void USART_Init(void);
+
+USART_Info_t usartInfo = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,7 +83,7 @@ int main(void)
   /* USER CODE END Init */
 	GPIO_CONFIGURE();
 
-	I2C_Init();
+	USART_Init();
 
 	//	SPI_Init();
 	//	SPIEnablePeripheral(SPI1, E_EN);
@@ -102,14 +106,26 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  uint8_t dataBuf[] = "Hello world\n";
+	  USARTSendData(&usartInfo, dataBuf, sizeof(dataBuf));
 
     /* USER CODE BEGIN 3 */
-	  uint8_t dataBuf[1] = {0x00};
-	  I2CMasterSendData(I2C1, 0x53, dataBuf, 1);
 
-	  I2CMasterReceiveData(I2C1, 0x53, dataBuf, 1);
   }
   /* USER CODE END 3 */
+}
+
+static void USART_Init()
+{
+
+	usartInfo.USARTx = USART2;
+	usartInfo.usartConfig.baudRate = 9600;
+	usartInfo.usartConfig.e_mode = E_USART_TX_ONLY;
+	usartInfo.usartConfig.e_parityType = E_USART_DISABLE_PARITY;
+	usartInfo.usartConfig.e_stopBit = E_USART_1_STOP_BIT;
+	usartInfo.usartConfig.e_wordLen = E_USART_8_DATA_BITS;
+
+	USARTInitialize(&usartInfo);
 }
 
 static void SPI_Init()
@@ -178,21 +194,34 @@ static void GPIO_CONFIGURE(void)
 
 	/** Enable peripheral clocks for GPIOs */
 	// TODO: Add this inside the GPIOInitialize function
-	GPIOEnablePeriphClk(GPIOB, E_EN);
+	GPIOEnablePeriphClk(GPIOA, E_EN);
 
 	GPIO_Info_t gpioInfo = {0};
 
-	gpioInfo.GPIOx = GPIOB;
-	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_8;		/** I2C1 SCL */
+	gpioInfo.GPIOx = GPIOA;
+	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_2;		/** USART TX */
 	gpioInfo.pinConfiguration.mode = E_GPIO_ALTERNATE;
-	gpioInfo.pinConfiguration.alternateFunc = E_GPIO_ALT_FUNC_4;
+	gpioInfo.pinConfiguration.alternateFunc = E_GPIO_ALT_FUNC_7;
 	gpioInfo.pinConfiguration.speed = E_GPIO_HIGH_SPEED;
 	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_PULLUP;
 	gpioInfo.pinConfiguration.type = E_GPIO_OPENDRAIN;
 	GPIOInitialize(&gpioInfo);
 
-	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_9;		/** I2C1 SDA */
+	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_3;		/** USART RX */
 	GPIOInitialize(&gpioInfo);
+
+
+//	gpioInfo.GPIOx = GPIOB;
+//	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_8;		/** I2C1 SCL */
+//	gpioInfo.pinConfiguration.mode = E_GPIO_ALTERNATE;
+//	gpioInfo.pinConfiguration.alternateFunc = E_GPIO_ALT_FUNC_4;
+//	gpioInfo.pinConfiguration.speed = E_GPIO_HIGH_SPEED;
+//	gpioInfo.pinConfiguration.pullUpDownConf = E_GPIO_PULLUP;
+//	gpioInfo.pinConfiguration.type = E_GPIO_OPENDRAIN;
+//	GPIOInitialize(&gpioInfo);
+//
+//	gpioInfo.pinConfiguration.pinNumber = E_GPIO_PIN_9;		/** I2C1 SDA */
+//	GPIOInitialize(&gpioInfo);
 }
 
 void EXTI15_10_IRQHandler(void)
